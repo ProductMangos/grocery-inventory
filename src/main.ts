@@ -1,24 +1,28 @@
 import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+interface InventoryItem {
+  id: string;
+  description: string;
+  date: string;
+  isStock: boolean;
+  barcode: string;
+}
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+const main = async () => {
+  await renderDashboardWithData();
+};
+
+const renderDashboardWithData = async () => {
+  await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=getInventory&userId=1`)
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      const tbody = document.getElementById('tbody') as HTMLTableElement;
+      tbody.innerHTML = (data as InventoryItem[])
+      .map((item) => 
+        `<tr><td>${item.id}</td><td>${item.description}</td><td>${item.date}</td><td>${item.isStock}</td><td>${item.barcode}</td></tr>`
+      ).join('');
+    });
+};
+
+main();
