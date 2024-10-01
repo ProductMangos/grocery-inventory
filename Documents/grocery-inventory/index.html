@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + TS</title>
+  </head>
+  <body>
+    <div id="reader" width="800px"></div>
+    <div id="result"></div>
+    <div style="text-align: left; width: 100%; max-width: 1000px; margin: 0 auto">
+        <button id="trigger-scan">Add by Scanning</button>
+        <button id="trigger-name">Add by Name</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th id="description">Description</th>
+                    <th>Expiration Date</th>
+                    <th>In Stock</th>
+                    <th>Barcode #</th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+
+    <dialog id="dialogAdd" style="z-index: 200;">
+        <form method="dialog">
+            <label for="name">Name:</label>
+            <input id="name" name="name" type="text" />
+            <label for="expiration-date">Expiration Date:</label>
+            <input id="expiration-date" name="expiration-date" type="date" />
+            <label for="in-stock">In Stock:</label>
+            <input id="in-stock" name="in-stock" type="checkbox" />
+            <label for="barcode">Barcode:</label>
+            <input id="barcode" name="barcode" type="text" />
+            <button id="add">Add</button>
+        </form>
+    </dialog>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
