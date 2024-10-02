@@ -12,6 +12,7 @@ const main = async () => {
   await renderDashboardWithData();
   openAddDialogOnClick();
   await addItemOnClick();
+  await deleteItemOnClick();
 };
 
 const renderDashboardWithData = async () => {
@@ -21,7 +22,7 @@ const renderDashboardWithData = async () => {
       const tbody = document.getElementById('tbody') as HTMLTableElement;
       tbody.innerHTML = (data as InventoryItem[])
       .map((item) => 
-        `<tr><td>${item.id}</td><td>${item.description}</td><td>${item.date}</td><td>${item.isStock}</td><td>${item.barcode}</td></tr>`
+        `<tr><td>${item.id}</td><td>${item.description}</td><td>${item.date}</td><td>${item.isStock}</td><td>${item.barcode}</td><td><button class="delete-btn" data-id="${item.id}">Delete</button></td></tr>`
       ).join('');
     });
 };
@@ -54,5 +55,29 @@ const openAddDialogOnClick = () => {
       await renderDashboardWithData();
   
   });
+ }
+ 
+
+
+ const deleteItemOnClick = async () => {
+  const deleteButton = document.querySelectorAll(".delete-btn");
+
+  console.log("delete");
+  deleteButton.forEach(button => {
+    button.addEventListener("click", async () => {
+      const id = button.getAttribute("data-id");
+
+      console.log(id);
+      
+      await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=deleteInventoryRow&id=${id}&userId=1`)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+        })
+
+        await renderDashboardWithData();
+
+    })
+  })
  }
 main();
