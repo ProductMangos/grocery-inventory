@@ -12,7 +12,8 @@ const main = async () => {
   await renderDashboardWithData();
   openAddDialogOnClick();
   await addItemOnClick();
-  await deleteItemOnClick();
+  await openDeleteDialog();
+  closeDeleteDialog();
 };
 
 const renderDashboardWithData = async () => {
@@ -56,28 +57,48 @@ const openAddDialogOnClick = () => {
   
   });
  }
- 
 
 
- const deleteItemOnClick = async () => {
+ const openDeleteDialog = async () => {
   const deleteButton = document.querySelectorAll(".delete-btn");
+  const deleteDialog = document.getElementById("dialogDelete") as HTMLDialogElement;
+  let id: string;
 
-  console.log("delete");
   deleteButton.forEach(button => {
     button.addEventListener("click", async () => {
-      const id = button.getAttribute("data-id");
-
-      console.log(id);
-      
-      await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=deleteInventoryRow&id=${id}&userId=1`)
-        .then(response => response.json())
-        .then(data => {
-          console.log(data);
-        })
-
-        await renderDashboardWithData();
-
+      id = button.getAttribute("data-id") as string;
+      deleteDialog.showModal();
     })
   })
+
+  const deleteItem = document.getElementById("delete") as HTMLButtonElement;
+  deleteItem.addEventListener("click", async () => await deleteItemOnClick(id));
+
  }
+
+ const closeDeleteDialog = () => {
+  const dialogDelete = document.getElementById("dialog-delete") as HTMLDialogElement;
+  const closeDelete = document.getElementById("close-delete") as HTMLButtonElement;
+
+  closeDelete.addEventListener("click", () => {
+    dialogDelete.close("No item to delete");
+
+  })
+
+ }
+
+ const deleteItemOnClick = async (id: string) => {
+  await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=deleteInventoryRow&id=${id}&userId=1`)
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+  })
+  await renderDashboardWithData();
+ }
+
+
 main();
+
+      
+
+
