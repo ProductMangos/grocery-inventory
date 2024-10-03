@@ -37,7 +37,6 @@ const openAddDialogOnClick = () => {
   });
  }
 
-
  const addItemOnClick = async () => {
   const addButton = document.getElementById("add") as HTMLButtonElement;
 
@@ -57,7 +56,6 @@ const openAddDialogOnClick = () => {
   
   });
  }
-
 
  const openDeleteDialog = async () => {
   const deleteButton = document.querySelectorAll(".delete-btn");
@@ -84,7 +82,6 @@ const openAddDialogOnClick = () => {
     dialogDelete.close("No item to delete");
 
   })
-
  }
 
  const deleteItemOnClick = async (id: string) => {
