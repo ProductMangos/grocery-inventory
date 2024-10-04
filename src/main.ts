@@ -25,7 +25,7 @@ const renderDashboardWithData = async () => {
       const tbody = document.getElementById('tbody') as HTMLTableElement;
       tbody.innerHTML = (data as InventoryItem[])
       .map((item) => 
-        `<tr data-id=${item.id} data-description=${item.description} data-isStock=${item.isStock} data-barcode=${item.barcode} data-date=${item.date}><td>${item.id}</td><td>${item.description}</td><td>${item.date}</td><td>${item.isStock}</td><td>${item.barcode}</td><td><button class="delete-btn" data-id="${item.id}">Delete</button></td></tr>`
+        `<tr data-id=${item.id} data-description=${item.description} data-isStock=${item.isStock} data-barcode=${item.barcode} data-date=${item.date}><td>${item.id}</td><td>${item.description}</td><td>${item.date!.split("T")[0]}</td><td>${item.isStock}</td><td>${item.barcode}</td><td><button class="delete-btn" data-id="${item.id}">Delete</button></td></tr>`
       ).join('');
     });
 };
