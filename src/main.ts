@@ -8,12 +8,14 @@ interface InventoryItem {
   barcode: string;
 }
 
+
 const main = async () => {
   await renderDashboardWithData();
   openAddDialogOnClick();
   await addItemOnClick();
   await openDeleteDialog();
   closeDeleteDialog();
+  editEditDialog();
 };
 
 const renderDashboardWithData = async () => {
@@ -23,7 +25,7 @@ const renderDashboardWithData = async () => {
       const tbody = document.getElementById('tbody') as HTMLTableElement;
       tbody.innerHTML = (data as InventoryItem[])
       .map((item) => 
-        `<tr><td>${item.id}</td><td>${item.description}</td><td>${item.date}</td><td>${item.isStock}</td><td>${item.barcode}</td><td><button class="delete-btn" data-id="${item.id}">Delete</button></td></tr>`
+        `<tr data-id=${item.id} data-description=${item.description} data-isStock=${item.isStock} data-barcode=${item.barcode} data-date=${item.date}><td>${item.id}</td><td>${item.description}</td><td>${item.date}</td><td>${item.isStock}</td><td>${item.barcode}</td><td><button class="delete-btn" data-id="${item.id}">Delete</button></td></tr>`
       ).join('');
     });
 };
@@ -88,6 +90,44 @@ const openAddDialogOnClick = () => {
   await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=deleteInventoryRow&id=${id}&userId=1`)
     .then(response => response.json())
     .then(data => {
+      console.log(data);
+  })
+  await renderDashboardWithData();
+ }
+
+ const editEditDialog = async () => {
+  const tr = document.querySelectorAll("tr");
+  const dialogEdit = document.getElementById("dialogEdit") as HTMLDialogElement;
+  let id: string;
+  let description = document.getElementById("edit-name") as HTMLInputElement;
+  let date = document.getElementById("edit-date") as HTMLInputElement;
+  let inStock = document.getElementById("edit-in-stock") as HTMLInputElement;
+  let barcode = document.getElementById('edit-barcode') as HTMLInputElement;
+
+  tr.forEach(row => {
+    row.addEventListener("click", () => {
+      id = row.getAttribute("data-id") as string;
+      description.value = row.getAttribute("data-description") as string;
+      date.value = row.getAttribute("data-date")!.split("T")[0];
+      inStock.checked = row.getAttribute("data-isStock") === "true";
+      barcode.value = row.getAttribute("data-barcode") as string;
+
+      dialogEdit.showModal()
+    })
+  })
+
+  const editButton = document.getElementById('edit') as HTMLButtonElement;
+
+  editButton.addEventListener("click", async () => {
+    await editItemOnClick(id, description.value, date.value, true, barcode.value)
+  })
+
+ }
+
+ const editItemOnClick = async (id: string, description: string, date: string, inStock: boolean, barcode: string) => {
+  await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=editInventory&description=${description}&expirationDate=${date}&inStock=${inStock}&barCode=${barcode}&userId=1&id=${id}`)
+  .then(response => response.json())
+  .then(data => {
       console.log(data);
   })
   await renderDashboardWithData();

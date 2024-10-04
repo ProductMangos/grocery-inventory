@@ -48,6 +48,20 @@
         <button id="delete">Yes</button>
       </form>
     </dialog>
+
+    <dialog id="dialogEdit" style="z-index: 200;">
+      <form method="dialog">
+          <label for="edit-name">Description:</label>
+          <input id="edit-name" name="edit-name" type="text" />
+          <label for="edit-date">Expiration Date:</label>
+          <input id="edit-date" name="edit-date" type="date" />
+          <label for="edit-in-stock">In Stock:</label>
+          <input id="edit-in-stock" name="edit-in-stock" type="checkbox" />
+          <label for="edit-barcode">Barcode:</label>
+          <input id="edit-barcode" name="edit-barcode" type="text" />
+          <button id="edit">Edit</button>
+      </form>
+    </dialog>
     
     <script type="module" src="/src/main.ts"></script>
   </body>
