@@ -7,7 +7,10 @@
     <title>Vite + TS</title>
   </head>
   <body>
-    <div id="reader" width="800px"></div>
+    <dialog id="addVideoDialog">
+        <video id="videoElement" width="100%" height="100%" style="border: 1px solid black;"></video>
+        <button id="close-video">Close</button>
+    </dialog>
     <div id="result"></div>
     <div style="text-align: left; width: 100%; max-width: 1000px; margin: 0 auto">
         <button id="trigger-scan">Add by Scanning</button>
@@ -15,12 +18,11 @@
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <!-- <th>ID</th> -->
                     <th id="description">Description</th>
                     <th>Expiration Date</th>
                     <th>In Stock</th>
                     <th>Barcode #</th>
-                    <th>Option</th>
                 </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -38,31 +40,45 @@
             <label for="barcode">Barcode:</label>
             <input id="barcode" name="barcode" type="text" />
             <button id="add">Add</button>
+            <button id="close">Cancel</button>
         </form>
     </dialog>
     
-    <dialog id="dialogDelete" style="z-index: 200;">
-      <h2>Are you sure you want to delete?</h2>
-      <form method="dialog" id="delete-ui">
-        <button id="close-delete">Cancel</button>
-        <button id="delete">Yes</button>
-      </form>
-    </dialog>
 
-    <dialog id="dialogEdit" style="z-index: 200;">
+    <dialog id="dialogEdit" style="z-index: 200;" >
+      <div id="delete-container">
+        <button id="delete" aria-label="Delete">
+          <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 30 30">
+            <path d="M 14.984375 2.4863281 A 1.0001 1.0001 0 0 0 14 3.5 L 14 4 L 8.5 4 A 1.0001 1.0001 0 0 0 7.4863281 5 L 6 5 A 1.0001 1.0001 0 1 0 6 7 L 24 7 A 1.0001 1.0001 0 1 0 24 5 L 22.513672 5 A 1.0001 1.0001 0 0 0 21.5 4 L 16 4 L 16 3.5 A 1.0001 1.0001 0 0 0 14.984375 2.4863281 z M 6 9 L 7.7929688 24.234375 C 7.9109687 25.241375 8.7633438 26 9.7773438 26 L 20.222656 26 C 21.236656 26 22.088031 25.241375 22.207031 24.234375 L 24 9 L 6 9 z"></path>
+        </svg>
+        </button>
+      </div>
       <form method="dialog">
+
+
+
+        <div class="form-group">
           <label for="edit-name">Description:</label>
           <input id="edit-name" name="edit-name" type="text" />
+        </div>
+        <div class="form-group">
           <label for="edit-date">Expiration Date:</label>
           <input id="edit-date" name="edit-date" type="date" />
-          <label for="edit-in-stock">In Stock:</label>
-          <input id="edit-in-stock" name="edit-in-stock" type="checkbox" />
+        </div>
+        <div class="form-group">
           <label for="edit-barcode">Barcode:</label>
           <input id="edit-barcode" name="edit-barcode" type="text" />
+        </div>
+        <div class="form-group-checkbox">
+          <label for="edit-in-stock">In Stock:</label>
+          <input id="edit-in-stock" name="edit-in-stock" type="checkbox" />
+        </div>
           <button id="edit">Edit</button>
+          <button id="close">Cancel</button>
       </form>
     </dialog>
-    
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

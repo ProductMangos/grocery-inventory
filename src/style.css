@@ -63,3 +63,63 @@ dialog[open]::backdrop {
   flex-direction: row;
   justify-content: space-between;
 }
+
+dialog {
+  outline: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+dialog > form {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+input {
+  padding: 10px 2px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100%;
+  max-width: 300px;
+  margin-top: 10px;
+}
+
+.form-group-checkbox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 10px;  
+  padding: 10px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+label {
+  margin-right: 10px;
+  width: 300px;
+}
+
+#delete {
+  width: 40px;
+  float: right;
+
+}
+
+button[id="edit"], button[id="close"] {
+  padding: 10px 20px;
+  margin: 10px 0
+}
+
+#edit-in-stock {
+  width: 40px;
+  height: 40px;
+  margin-right: 30px;
+}
