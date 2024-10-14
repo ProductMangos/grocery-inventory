@@ -46,12 +46,15 @@ const openAddDialogOnClick = () => {
   const addButton = document.getElementById("add") as HTMLButtonElement;
 
   addButton.addEventListener("click", async () => {
+    const rand = Date.now() * Math.random();
+    const id = rand.toString().slice(0, 10);
     const description = document.getElementById("name") as HTMLInputElement;
     const date = document.getElementById("date") as HTMLInputElement;
     const inStock = document.getElementById("in-stock") as HTMLInputElement;
     const barCode = document.getElementById("barcode") as HTMLInputElement;
 
-    await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=addInventory&description=${description.value}&expirationDate=${date.value}&inStock=${inStock.checked}&barCode=${barCode.value}&userId=1`)
+
+    await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=addInventory&id=${id}&description=${description.value}&expirationDate=${date.value}&inStock=${inStock.checked}&barCode=${barCode.value}&userId=1`)
       .then(response => response.json())
       .then(data => {
         console.log(data);
