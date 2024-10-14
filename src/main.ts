@@ -19,13 +19,16 @@ const main = async () => {
 };
 
 const renderDashboardWithData = async () => {
+  const loading = document.getElementById("loadingDialog") as HTMLDialogElement;
+  loading.showModal();
   await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=getInventory&userId=1`)
     .then(response => response.json())
     .then(data => {
+      loading.close();
       const tbody = document.getElementById('tbody') as HTMLTableElement;
       tbody.innerHTML = (data as InventoryItem[])
       .map((item) => 
-        `<tr data-id=${item.id} data-description=${item.description} data-isStock=${item.isStock} data-barcode=${item.barcode} data-date=${item.date}><td style="display: none"></td><td>${item.description}</td><td>${item.date!.split("T")[0]}</td><td>${item.isStock}</td><td>${item.barcode}</td></tr>`
+        `<tr data-id=${item.id} data-description="${item.description}" data-isStock=${item.isStock} data-barcode=${item.barcode} data-date=${item.date}><td style="display: none"></td><td>${item.description}</td><td>${item.date!.split("T")[0]}</td><td>${item.isStock}</td><td>${item.barcode}</td></tr>`
       ).join('');
     });
 };
@@ -61,20 +64,23 @@ const openAddDialogOnClick = () => {
 
 
  const deleteItemOnClick = async (id: string, editDialog: HTMLDialogElement) => {
-    const deleteItem = document.getElementById("delete") as HTMLButtonElement;
+  const deleteItem = document.getElementById("delete") as HTMLButtonElement;
 
+  // Remove any existing event listener
+  const newDeleteItem = deleteItem.cloneNode(true) as HTMLButtonElement;
+  deleteItem.parentNode?.replaceChild(newDeleteItem, deleteItem);
 
-    deleteItem.addEventListener("click", async () => {
-      await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=deleteInventoryRow&id=${id}&userId=1`)
-        .then(response => response.json())
-        .then(async data => {
-          console.log(data);
-          editDialog.close();
-          await renderDashboardWithData();
-      })
-    })
+  newDeleteItem.addEventListener("click", async () => {
+    await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=deleteInventoryRow&id=${id}&userId=1`)
+      .then(response => response.json())
+      .then(async (data) => {
+        console.log(data);
+        editDialog.close();
+        await renderDashboardWithData();
+      });
+  });
+};
 
- }
 
  const editEditDialog = () => {
   const tbody = document.getElementById('tbody') as HTMLTableElement;
@@ -133,21 +139,25 @@ const openAddDialogOnClick = () => {
       codeReader.decodeFromInputVideoDevice(undefined, videoElement)
         .then(result => {
           const scannedText = result.getText(); 
-          console.log(scannedText);
           fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?query=${scannedText}&pageSize=10&api_key=1kKZwAVhQ3d4nu4vayMevctde3xmIwxhsBMg6Jn7`)
             .then(response => response.json())
             .then(data => {
-
-              console.log(data);
-              const getData = data.foods[0];
-
-              // Check if the description is empty
-              if (!getData.description || getData.description.trim() === "") {
+              if (data.totalHits === 0) {
                 alert("No description available for the scanned item.");
+                const stream = videoElement.srcObject as MediaStream;
+                if (stream) {
+                  const tracks = stream.getTracks();
+                  tracks.forEach((track) => {
+                    track.stop();
+                  });
+                }
+
+                videoElement.srcObject = null;
+                addVideoDialog.close();
                 return;
               }
 
-              console.log(data.foods[0]);
+              const getData = data.foods[0];
 
               fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=addInventory&description=${getData.description}&expirationDate=null&inStock=true&barCode=${getData.gtinUpc}&userId=1`)
                 .then(response => response.json())
