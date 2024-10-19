@@ -5,10 +5,12 @@ interface InventoryItem {
   id: string;
   description: string;
   date: string;
+  quantity: string;
   isStock: boolean;
   barcode: string;
 }
 
+let globalData: InventoryItem[] = [];
 
 const main = async () => {
   await renderDashboardWithData();
@@ -28,8 +30,9 @@ const renderDashboardWithData = async () => {
       const tbody = document.getElementById('tbody') as HTMLTableElement;
       tbody.innerHTML = (data as InventoryItem[])
       .map((item) => 
-        `<tr data-id=${item.id} data-description="${item.description}" data-isStock=${item.isStock} data-barcode=${item.barcode} data-date=${item.date}><td style="display: none"></td><td>${item.description}</td><td>${item.date!.split("T")[0]}</td><td>${item.isStock}</td><td>${item.barcode}</td></tr>`
+        `<tr data-id=${item.id} data-description="${item.description}" data-quantity=${item.quantity} data-isStock=${item.isStock} data-barcode=${item.barcode} data-date=${item.date}><td style="display: none"></td><td>${item.description}</td><td>${item.date!.split("T")[0]}</td><td>${item.quantity}</td><td>${item.isStock}</td><td>${item.barcode}</td></tr>`
       ).join('');
+      globalData = data;
     });
 };
 
@@ -53,44 +56,67 @@ const openAddDialogOnClick = () => {
     const inStock = document.getElementById("in-stock") as HTMLInputElement;
     const barCode = document.getElementById("barcode") as HTMLInputElement;
 
+    let duplicate = false;
+    globalData.forEach((item) => {
+      if(parseInt(item.barcode) === parseInt(barCode.value)) {
+        duplicate = true;
+      } else {
+        duplicate = false;
+      }
+    });
 
-    await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=addInventory&id=${id}&description=${description.value}&expirationDate=${date.value}&inStock=${inStock.checked}&barCode=${barCode.value}&userId=1`)
+    if (!duplicate) { 
+      await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=addInventory&id=${id}&description=${description.value}&expirationDate=${date.value}&inStock=${inStock.checked}&barCode=${barCode.value}&userId=1`)
       .then(response => response.json())
       .then(data => {
         console.log(data);
       })
 
       await renderDashboardWithData();
-  
+
+    } else {
+      alert("Barcode already exists");
+    }
   });
  }
 
 
  const deleteItemOnClick = async (id: string, editDialog: HTMLDialogElement) => {
   const deleteItem = document.getElementById("delete") as HTMLButtonElement;
-
-  // Remove any existing event listener
+ const loading = document.getElementById("loadingDialog") as HTMLDialogElement;
+ 
   const newDeleteItem = deleteItem.cloneNode(true) as HTMLButtonElement;
   deleteItem.parentNode?.replaceChild(newDeleteItem, deleteItem);
 
   newDeleteItem.addEventListener("click", async () => {
-    await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=deleteInventoryRow&id=${id}&userId=1`)
+    loading.showModal();
+    try {
+      await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=deleteInventoryRow&id=${id}&userId=1`)
       .then(response => response.json())
       .then(async (data) => {
         console.log(data);
         editDialog.close();
+        loading.close();
         await renderDashboardWithData();
       });
+    } catch(error) {
+      console.log(error);
+      loading.close();
+    }
+
   });
 };
 
 
- const editEditDialog = () => {
+
+const editEditDialog = () => {
   const tbody = document.getElementById('tbody') as HTMLTableElement;
   const dialogEdit = document.getElementById('dialogEdit') as HTMLDialogElement;
+  let currentEditId: string | null = null;
 
   let description = document.getElementById('edit-name') as HTMLInputElement;
   let date = document.getElementById('edit-date') as HTMLInputElement;
+  let quantity = document.getElementById('edit-quantity') as HTMLInputElement;
   let inStock = document.getElementById('edit-in-stock') as HTMLInputElement;
   let barcode = document.getElementById('edit-barcode') as HTMLInputElement;
 
@@ -98,28 +124,29 @@ const openAddDialogOnClick = () => {
   tbody.addEventListener("click", (event) => {
     const row = (event.target as HTMLElement).closest("tr");
     if (row) {
-      const id = row.getAttribute("data-id") as string;
+      currentEditId = row.getAttribute("data-id"); // Store the current item's ID
       description.value = row.getAttribute("data-description") as string;
+      quantity.value = row.getAttribute("data-quantity") as string;
       date.value = row.getAttribute("data-date")!.split("T")[0];
       inStock.checked = row.getAttribute("data-isStock") === "true";
       barcode.value = row.getAttribute("data-barcode") as string;
 
       dialogEdit.showModal();
-      deleteItemOnClick(id, dialogEdit);
+      deleteItemOnClick(currentEditId!, dialogEdit); // Use the stored ID for deletion
     }
   });
 
   const editButton = document.getElementById('edit') as HTMLButtonElement;
   editButton.addEventListener("click", async () => {
-    const id = description.getAttribute("data-id"); // Ensure `id` is tied to description or another element
-    if (id) {
-      await editItemOnClick(id, description.value, date.value, inStock.checked, barcode.value);
+    if (currentEditId) {
+      console.log(currentEditId, description.value, date.value, quantity.value, inStock.checked, barcode.value);
+      await editItemOnClick(currentEditId, description.value, date.value, quantity.value, inStock.checked, barcode.value);
     }
   });
-}
+};
 
- const editItemOnClick = async (id: string, description: string, date: string, inStock: boolean, barcode: string) => {
-  await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=editInventory&description=${description}&expirationDate=${date}&inStock=${inStock}&barCode=${barcode}&userId=1&id=${id}`)
+ const editItemOnClick = async (id: string, description: string, date: string, quantity: string, inStock: boolean, barcode: string) => {
+  await fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=editInventory&description=${description}&expirationDate=${date}&quantity=${quantity}&inStock=${inStock}&barCode=${barcode}&userId=1&id=${id}`)
   .then(response => response.json())
   .then(data => {
       console.log(data);
@@ -135,6 +162,7 @@ const openAddDialogOnClick = () => {
   triggerScanButton.addEventListener("click", async () => {
     addVideoDialog.showModal();
     closeVideoDialog();
+    
     try {
       const codeReader = new BrowserMultiFormatReader();
 
@@ -142,10 +170,22 @@ const openAddDialogOnClick = () => {
       codeReader.decodeFromInputVideoDevice(undefined, videoElement)
         .then(result => {
           const scannedText = result.getText(); 
-          fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?query=${scannedText}&pageSize=10&api_key=1kKZwAVhQ3d4nu4vayMevctde3xmIwxhsBMg6Jn7`)
+
+          let duplicate = false;
+          globalData.forEach((item) => {
+            if(parseInt(item.barcode) === parseInt(scannedText)) {
+              duplicate = true;
+            } else {
+              duplicate = false;
+            }
+          });
+
+  
+          if (!duplicate) {
+            fetch(`https://world.openfoodfacts.org/api/v0/product/${scannedText}.json`)
             .then(response => response.json())
             .then(data => {
-              if (data.totalHits === 0) {
+              if (data.status === 0) {
                 alert("No description available for the scanned item.");
                 const stream = videoElement.srcObject as MediaStream;
                 if (stream) {
@@ -160,9 +200,13 @@ const openAddDialogOnClick = () => {
                 return;
               }
 
-              const getData = data.foods[0];
+              const description = data.product.product_name;
+              const barcode = data.product.code;
+              const rand = Date.now() * Math.random();
+              const id = rand.toString().slice(0, 10);
 
-              fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=addInventory&description=${getData.description}&expirationDate=null&inStock=true&barCode=${getData.gtinUpc}&userId=1`)
+              fetch(`${import.meta.env.VITE_GOOGLE_SHEETS_URL}?action=addInventory&id=${id}&description=${description}&expirationDate=null&quantity=1&inStock=true&barCode=${barcode}&userId=1`)
+
                 .then(response => response.json())
                 .then(data => {
                   console.log(data);
@@ -180,6 +224,11 @@ const openAddDialogOnClick = () => {
               videoElement.srcObject = null;
               addVideoDialog.close();
             })
+          } else {
+            alert("Barcode already exists");
+          }
+          
+
         })
         .catch(err => {
           // Handle errors in the scanning process
